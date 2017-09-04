@@ -2,7 +2,8 @@
 # -*- coding: utf8 -*-
 
 from splinter.driver.webdriver.firefox import WebDriver as Browser
-import sys
+import os, sys
+import platform
 
 #####################################################
 # global instance
@@ -32,6 +33,9 @@ def checkresult(x):
 def fillById(id, val):
     browser.find_by_id(id).first.value = unicode(val, UTF8)
 
+def screenshot(name):
+    browser.screenshot(os.path.join(os.path.dirname(__file__), '%s-' % (name.decode(UTF8).encode(GBK) if platform.system() == 'Windows' else name)))
+
 def testLogin(desc, username, password, result):
     """
         fill login form message and submit, check result message and print
@@ -42,6 +46,7 @@ def testLogin(desc, username, password, result):
     fillById('loginform-username', username)
     fillById('loginform-password', password)
     browser.find_by_name('login-button').first.click()
+    screenshot(desc)
     checkresult(result)
 
 # chrome driver : http://code.google.com/p/selenium/wiki/ChromeDriver
@@ -53,13 +58,14 @@ try:
     print("测试页面: " + browser.title.encode(UTF8))
 
     # test login
-    testLogin('测试未输入用户名', '', '', '用户名不能为空。')
-    testLogin('测试未输入密码', 'qd_test_001', '', '密码不能为空。')
-    testLogin('测试帐户不存在', '这是一个不存在的名字哦', 'xxxxxxx', '用户名或密码错误！')
-    testLogin('测试成功登录', 'admin', 'a123456', '退出 (admin)')
+    testLogin('01-测试未输入用户名', '', '', '用户名不能为空。')
+    testLogin('02-测试未输入密码', 'qd_test_001', '', '密码不能为空。')
+    testLogin('03-测试帐户不存在', '这是一个不存在的名字哦', 'xxxxxxx', '用户名或密码错误！')
+    testLogin('04-测试成功登录', 'admin', 'a123456', '退出 (admin)')
 
 except Exception, x:
     print x
+    screenshot('00-except')
 
 finally:
     browser.quit()
