@@ -9,15 +9,23 @@ import platform
 # global instance
 GBK = "gbk"
 UTF8 = "utf8"
+isWindows = platform.system() == 'Windows'
+
+def output(x, f=None):
+    if f is None:
+        f = sys.stdout
+
+    f.write(u'%s\n' % (x.decode(UTF8) if isinstance(x, str) else x))
+    f.flush()
 
 def resultMsg(x):
     """
         judge result and print, x : True or False
     """
     if x == True:
-        print 'pass'
+        output('pass')
     else:
-        print '[X]not pass'
+        output('[X]not pass')
 
 def checkresult(x):
     """
@@ -25,24 +33,24 @@ def checkresult(x):
     """
     for tr in browser.find_by_css('.has-error'):
         try:
-            sys.stderr.write('%s: %s\n' % (tr.find_by_css('.form-control')['name'], tr.find_by_css('.help-block-error').text))
+            output(u'\t%s: %s\n' % (tr.find_by_css('.form-control')['name'], tr.find_by_css('.help-block-error').text), f=sys.stderr)
         except Exception, e:
-            print e
+            output(e)
     resultMsg(browser.is_text_present(unicode(x, UTF8)))
 
 def fillById(id, val):
     browser.find_by_id(id).first.value = unicode(val, UTF8)
 
 def screenshot(name):
-    browser.screenshot(os.path.join(os.path.dirname(__file__), '%s-' % (name.decode(UTF8).encode(GBK) if platform.system() == 'Windows' else name)))
+    browser.screenshot(os.path.join(os.path.dirname(__file__), '%s-' % (name.decode(UTF8).encode(GBK) if isWindows else name)))
 
 def testLogin(desc, username, password, result):
     """
         fill login form message and submit, check result message and print
     """
-    print '\n=========================='
-    print(desc)
-    print '--------------------------'
+    output('\n==========================')
+    output(desc)
+    output('--------------------------')
     fillById('loginform-username', username)
     fillById('loginform-password', password)
     browser.find_by_name('login-button').first.click()
@@ -55,7 +63,7 @@ browser = Browser()
 
 try:
     browser.visit('http://ucenter.espacetime.com/index.php?r=site%2Flogin')
-    print("测试页面: " + browser.title.encode(UTF8))
+    output("测试页面: " + browser.title.encode(UTF8))
 
     # test login
     testLogin('01-测试未输入用户名', '', '', '用户名不能为空。')
@@ -64,7 +72,7 @@ try:
     testLogin('04-测试成功登录', 'admin', 'a123456', '退出 (admin)')
 
 except Exception, x:
-    print x
+    output(x)
     screenshot('00-except')
 
 finally:
